@@ -27,7 +27,7 @@ int G_min = 0;
 int B_min = 0;
 void on_Trackbar(int, void *)
 {
-	Mat srcImg = imread("dafu_red.png", 1);
+	Mat srcImg = imread("video\\dafu_red_nanli1.png", 1);
 	Mat tempImg;
 	CvScalar st;
 	Mat dstImg = Mat::zeros(srcImg.size(), CV_8U);
@@ -55,6 +55,7 @@ void on_Trackbar(int, void *)
 
 	imshow("result", dstImg);
 	imshow(WINDOW_NAME, srcImg);
+	waitKey(5);
 }
 int main(int argc, char** argv)
 {
