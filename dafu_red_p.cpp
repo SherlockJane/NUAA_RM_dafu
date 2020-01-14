@@ -4,7 +4,7 @@
 //#define video_test
 //#define jpg_test
 #define video_nanli
-#define pi 3.1415926
+
 #include <iostream>
 #ifdef open_serial
 #include "serial.h"
@@ -22,9 +22,9 @@
 using namespace std;
 using namespace cv;
 
-int k = 2;
-float gain_ang = 1;
-int dir_flag = -1;//cw:-1,ccw=1
+int k=2;
+float gain_ang=1;
+int dir_flag=-1;//cw:-1,ccw=1
 
 int bgr2binary(Mat &srcImg, bool is_red, Mat &threadImg)
 {
@@ -65,24 +65,6 @@ float GetPixelLength(Point PixelPointO, Point PixelPointA)
 	PixelLength = sqrtf(PixelLength);
 	return PixelLength;
 }
-cv::Point2f getRotatePoint(cv::Mat srcImage, cv::Point Points, const cv::Point rotate_center, const double angle) 
-{ 
-	
-	int x1 = 0, y1 = 0;	
-	int row = srcImage.rows;	
-	x1 = Points.x;		
-	y1 = row - Points.y;		
-	int x2 = rotate_center.x;		
-	int y2 = row - rotate_center.y;		
-	int x = cvRound((x1 - x2)*cos(pi / 180.0 * angle) - (y1 - y2)*sin(pi / 180.0 * angle) + x2);		
-	int y = cvRound((x1 - x2)*sin(pi / 180.0 * angle) + (y1 - y2)*cos(pi / 180.0 * angle) + y2);		
-	y = row - y;
-	cv::Point2f dstPoints;			
-	dstPoints.x = x;
-	dstPoints.y = y;
-	return dstPoints; 
-}
-
 int main()
 {
 	Mat srcImg, threadImg, cutImg, thresholdImg;
@@ -90,16 +72,17 @@ int main()
 	namedWindow("src", CV_WINDOW_AUTOSIZE);
 	//namedWindow("threadImg", CV_WINDOW_AUTOSIZE);
 	//namedWindow("circle", CV_WINDOW_AUTOSIZE);
+
 #ifdef video_nanli
 	VideoCapture cap;
 	cap.open("E:\\RM\\tx2\\2019_win_dafu\\dafu\\dafu\\video\\dafu_mid1_2000.avi");
-	if (!cap.isOpened())//Èç¹ûÊÓÆµ²»ÄÜÕı³£´ò¿ªÔò·µ»Ø
+	if (!cap.isOpened())//å¦‚æœè§†é¢‘ä¸èƒ½æ­£å¸¸æ‰“å¼€åˆ™è¿”å›
 	{
-		cout << "´ò¿ªÊ§°Ü" << endl;
+		cout << "æ‰“å¼€å¤±è´¥" << endl;
 		return -1;
 	}
 	//get cap information
-	int rate = cap.get(CV_CAP_PROP_FPS);	//Ö¡ÂÊ
+	int rate = cap.get(CV_CAP_PROP_FPS);	//å¸§ç‡
 	Size size = Size(cap.get(CV_CAP_PROP_FRAME_WIDTH), cap.get(CV_CAP_PROP_FRAME_HEIGHT));
 	Mat rangeImg = Mat::zeros(size, CV_8U);
 	VideoWriter writer;
@@ -123,13 +106,13 @@ int main()
 		//---------------------------------------find------------------------------------------------//
 		vector<vector<Point> > contours;
 		vector<Vec4i> hierarchy;
-		// ÓÃCannyËã×Ó¼ì²â±ßÔµ
+		// ç”¨Cannyç®—å­æ£€æµ‹è¾¹ç¼˜
 		//Canny(thresholdImg, canny_output, 100, 100 * 2, 3);
-		// Ñ°ÕÒÂÖÀª
+		// å¯»æ‰¾è½®å»“
 		cv::findContours(thresholdImg, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
 		if (contours.size() <= 0) continue;
 		//cout << "contours:" << contours.size() << "hierarchy" << hierarchy.size() << endl;
-		// »æ³öÂÖÀª
+		// ç»˜å‡ºè½®å»“
 		Mat drawing = Mat::zeros(thresholdImg.size(), CV_8UC3);
 		Mat drawing_out = Mat::zeros(thresholdImg.size(), CV_8UC3);
 		Mat drawing_in = Mat::zeros(thresholdImg.size(), CV_8UC3);
@@ -141,7 +124,7 @@ int main()
 		imshow("drawing", drawing);
 		//------------------------------------in and out----------------------------------------//
 		
-		vector<RotatedRect> box(contours.size()); //¶¨Òå×îĞ¡Íâ½Ó¾ØĞÎ¼¯ºÏ 
+		vector<RotatedRect> box(contours.size()); //å®šä¹‰æœ€å°å¤–æ¥çŸ©å½¢é›†åˆ 
 		for (int i = 0; i < hierarchy.size(); i++)
 		{
 			if (hierarchy[i].val[2] == -1 && hierarchy[i].val[3] != -1)
@@ -157,7 +140,7 @@ int main()
 		}
 		imshow("drawing_out", drawing_out);
 		cv::waitKey(5);
-		vector<RotatedRect> box2(contours.size()); //¶¨Òå×îĞ¡Íâ½Ó¾ØĞÎ¼¯ºÏ 
+		vector<RotatedRect> box2(contours.size()); //å®šä¹‰æœ€å°å¤–æ¥çŸ©å½¢é›†åˆ 
 		for (int i = 0; i < hierarchy.size(); i++)
 		{
 			if (hierarchy[i].val[2] != -1 && hierarchy[i].val[3] == -1)
@@ -174,7 +157,7 @@ int main()
 		imshow("drawing_in", drawing_in);
 		cv::waitKey(5);
 		//-------------------------------------------armour--------------------------------------//
-		//Çó×îĞ¡Íâ½Ó¾ØĞÎ
+		//æ±‚æœ€å°å¤–æ¥çŸ©å½¢
 		Point2f rect[4];
 		for (int i = 0; i < contours.size(); i++)
 		{
@@ -195,7 +178,7 @@ int main()
 				box2[i].points(rect2);
 			}
 		}
-		//¸ù¾İÃæ»ıÉ¸Ñ¡×°¼×°å
+		//æ ¹æ®é¢ç§¯ç­›é€‰è£…ç”²æ¿
 		int armor_cnt = 0;
 		Mat armourImg = Mat::zeros(size, CV_8UC3);
 		Mat detect_armourImg = Mat::zeros(size, CV_8UC3);
@@ -204,13 +187,13 @@ int main()
 		{
 			if (box[i].center.x != -1)
 			{
-				//³¤µÄÎªwidth£¬¶ÌµÄÎªheight
+				//é•¿çš„ä¸ºwidthï¼ŒçŸ­çš„ä¸ºheight
 				//cout << "width:" << box[i].size.width << "  height:" << box[i].size.height << endl;	
 				if ((box[i].size.width * box[i].size.height > 400) && (box[i].size.width * box[i].size.height < 600))
 				{
 					/*Scalar color = Scalar(0, 255, 0);
 					cv::drawContours(armourImg, contours, i, color, 2, 8, hierarchy);*/
-					//³¤µÄÎªwidth£¬¶ÌµÄÎªheight
+					//é•¿çš„ä¸ºwidthï¼ŒçŸ­çš„ä¸ºheight
 					/*float detect_dafu_armour_pixel_width;
 					float detect_dafu_armour_pixel_height;
 					if (box[i].size.width > box[i].size.height)
@@ -252,7 +235,7 @@ int main()
 		cv::waitKey(5);
 		//imshow("detect_armourImg", detect_armourImg);
 		//cv::waitKey(5);
-		//ÕÒÒª»÷´òµÄÄÇÒ»¿é
+		//æ‰¾è¦å‡»æ‰“çš„é‚£ä¸€å—
 		Mat find_armourImg = Mat::zeros(size, CV_8UC3);
 		Point2f armour_line;
 		int is_finding = 0;
@@ -260,13 +243,13 @@ int main()
 		{
 			if (box2[i].center.x != -1)
 			{
-				//³¤µÄÎªwidth£¬¶ÌµÄÎªheight
+				//é•¿çš„ä¸ºwidthï¼ŒçŸ­çš„ä¸ºheight
 				//cout << "width:" << box2[i].size.width << "  height:" << box2[i].size.height << endl;
 				if ((box2[i].size.width * box2[i].size.height > 3000) && (box2[i].size.width * box2[i].size.height < 4000))
 				{
 					/*Scalar color = Scalar(0, 255, 0);
 					cv::drawContours(armourImg, contours, i, color, 2, 8, hierarchy);*/
-					//³¤µÄÎªwidth£¬¶ÌµÄÎªheight
+					//é•¿çš„ä¸ºwidthï¼ŒçŸ­çš„ä¸ºheight
 					/*float detect_dafu_armour_pixel_width;
 					float detect_dafu_armour_pixel_height;
 					if (box[i].size.width > box[i].size.height)
@@ -304,7 +287,7 @@ int main()
 			continue;
 		imshow("find_armourImg", find_armourImg);
 		cv::waitKey(5);
-		//¼¸ºÎ¾àÀë
+		//å‡ ä½•è·ç¦»
 		float real_armour_dafuCenter_pixel_length = 56;
 		float min_length = 640;
 		float now_length = 0;
@@ -329,29 +312,29 @@ int main()
 			is_finding_armour = 1;
 			cv::circle(srcImg, Point(armour_ing.x, armour_ing.y), 2, Scalar(0, 255, 0), 2);
 		}
-		//-------------------------------predict-------------------------------------------//
-		//------------predict--------------------------------fix sign
-		Point2i dafu_center= armour_line*k- armour_ing;
-		double angle = 10;
-		cv::Mat rot_mat = cv::getRotationMatrix2D(dafu_center, angle, 1.0);
-		//Point2i diff = armour_line - armour_ing;
-		//dafu_center = armour_ing + diff * k;
-		/*float radius = GetPixelLength(dafu_center, armour_ing);
-		int diff_x = dafu_center.x - armour_ing.x;
-		int diff_y = dafu_center.y - armour_ing.y;
-		float cur_ang = cvFastArctan(diff_y, diff_x)*(-1);
 
-		float ang = cur_ang + gain_ang * dir_flag;
-		float pre_x = radius * cos(ang);
-		float pre_y = radius * sin(ang);
+        //------------predict--------------------------------fix sign
+        Point2i dafu_center;
+        Point2i diff=armour_line-armour_ing;
+        dafu_center=armour_ing+diff*k;
+        float radius=GetPixelLength(dafu_center,armour_ing);
+        int diff_x=dafu_center.x-armour_ing.x;
+        int diff_y=dafu_center.y-armour_ing.y;
+        float cur_ang=cvFastArctan(diff_y,diff_x)*(-1);
+
+        float ang=cur_ang+gain_ang*dir_flag;
+        float pre_x=radius*cos(ang);
+        float pre_y=radius*sin(ang);
 		int x_flag;
-		if (diff_x > 0)
+		if (diff_x>0)
 			x_flag = -1;
 		else
 			x_flag = 1;
-		Point armour_predicted(dafu_center.x + pre_x * x_flag, dafu_center.y + pre_y);*/
-		cv::Point2f dstPoints = getRotatePoint(srcImg, armour_ing, dafu_center, angle);
-		cv::circle(srcImg, dstPoints, 2, Scalar(255, 255, 0), 2);
+        Point armour_predicted(dafu_center.x+pre_x*x_flag,dafu_center.y+pre_y);
+        cv::circle(srcImg, armour_predicted, 2, Scalar(255, 255, 0), 2);
+
+
+        //------------------imshow----------------------------
 		if (!is_finding_armour)
 			continue;
 		imshow("src", srcImg);
@@ -364,13 +347,13 @@ int main()
 #ifdef video_test
 	VideoCapture cap;
 	cap.open("E:\\RM\\tx2\\2019_win_dafu\\dafu\\dafu\\video\\dafu_red_cut.avi");
-	if (!cap.isOpened())//Èç¹ûÊÓÆµ²»ÄÜÕı³£´ò¿ªÔò·µ»Ø
+	if (!cap.isOpened())//å¦‚æœè§†é¢‘ä¸èƒ½æ­£å¸¸æ‰“å¼€åˆ™è¿”å›
 	{
-		cout << "´ò¿ªÊ§°Ü" << endl;
+		cout << "æ‰“å¼€å¤±è´¥" << endl;
 		return -1;
 	}
 	//get cap information
-	int rate = cap.get(CV_CAP_PROP_FPS);	//Ö¡ÂÊ
+	int rate = cap.get(CV_CAP_PROP_FPS);	//å¸§ç‡
 	Size size = Size(cap.get(CV_CAP_PROP_FRAME_WIDTH), cap.get(CV_CAP_PROP_FRAME_HEIGHT));
 	Size size_cut = Size(500,300);
 	Rect rect(54, 70, 500, 300);
@@ -409,7 +392,7 @@ int main()
 		}
 		else
 		{
-			cout << "ÑÕÉ«´¦ÀíÊ±£¬Í¼Æ¬Îª¿Õ" << endl;
+			cout << "é¢œè‰²å¤„ç†æ—¶ï¼Œå›¾ç‰‡ä¸ºç©º" << endl;
 			return -1;
 		}*/
 
@@ -430,13 +413,13 @@ int main()
 		//Mat canny_output;
 		vector<vector<Point> > contours;
 		vector<Vec4i> hierarchy;
-		// ÓÃCannyËã×Ó¼ì²â±ßÔµ
+		// ç”¨Cannyç®—å­æ£€æµ‹è¾¹ç¼˜
 		//Canny(thresholdImg, canny_output, 100, 100 * 2, 3);
-		// Ñ°ÕÒÂÖÀª
+		// å¯»æ‰¾è½®å»“
 		findContours(thresholdImg, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
 		if (contours.size() <= 0) continue;
 		//cout << "contours:" << contours.size() << "hierarchy" << hierarchy.size() << endl;
-		// »æ³öÂÖÀª
+		// ç»˜å‡ºè½®å»“
 		Mat drawing = Mat::zeros(thresholdImg.size(), CV_8UC3);
 		Mat drawing_hou = Mat::zeros(thresholdImg.size(), CV_8UC3);
 		Mat drawing_qian = Mat::zeros(thresholdImg.size(), CV_8UC3);
@@ -461,8 +444,8 @@ int main()
 
 //--------------------------------------------find armour------------------------------------------------------//
 		Mat armourImg = Mat::zeros(size, CV_8UC3);
-		vector<RotatedRect> box(contours.size()); //¶¨Òå×îĞ¡Íâ½Ó¾ØĞÎ¼¯ºÏ 
-		//Ã»ÓĞ×ÓÂÖÀª£¬µ«ÊÇÓĞ¸¸ÂÖÀªµÄ¡ª¡ª×°¼×°åµÄµÚÒ»¸öÌØÕ÷
+		vector<RotatedRect> box(contours.size()); //å®šä¹‰æœ€å°å¤–æ¥çŸ©å½¢é›†åˆ 
+		//æ²¡æœ‰å­è½®å»“ï¼Œä½†æ˜¯æœ‰çˆ¶è½®å»“çš„â€”â€”è£…ç”²æ¿çš„ç¬¬ä¸€ä¸ªç‰¹å¾
 		for (int i = 0; i < hierarchy.size(); i++)
 		{
 			if (hierarchy[i].val[2] == -1 && hierarchy[i].val[3] != -1)
@@ -476,7 +459,7 @@ int main()
 				box[i].center.x = -1;
 			}
 		}
-		//Çó×îĞ¡Íâ½Ó¾ØĞÎ
+		//æ±‚æœ€å°å¤–æ¥çŸ©å½¢
 		Point2f rect[4];
 		for (int i = 0; i < contours.size(); i++)
 		{
@@ -487,18 +470,18 @@ int main()
 				box[i].points(rect);
 			}
 		}
-		//¸ù¾İ³¤¿íºÍÃæ»ıÀ´É¸Ñ¡×°¼×°å
+		//æ ¹æ®é•¿å®½å’Œé¢ç§¯æ¥ç­›é€‰è£…ç”²æ¿
 		int armor_cnt = 0;
 		vector <Point2f> DetectArmourCenter(contours.size());
 		for (int i = 0; i < contours.size(); i++)
 		{
 			if (box[i].center.x != -1)
 			{
-				//³¤µÄÎªwidth£¬¶ÌµÄÎªheight
+				//é•¿çš„ä¸ºwidthï¼ŒçŸ­çš„ä¸ºheight
 				//cout << "width:" << box[i].size.width << "  height:" << box[i].size.height << endl;	
 				if ((box[i].size.width * box[i].size.height>60)&& (box[i].size.width * box[i].size.height <180))
 				{
-					//³¤µÄÎªwidth£¬¶ÌµÄÎªheight
+					//é•¿çš„ä¸ºwidthï¼ŒçŸ­çš„ä¸ºheight
 					float detect_dafu_armour_pixel_width;
 					float detect_dafu_armour_pixel_height;
 					if (box[i].size.width > box[i].size.height)
@@ -543,10 +526,10 @@ int main()
 		Point2f DafuCenter;
 		DafuCenter.x = size.width / 2;
 		DafuCenter.y = size.height / 2;
-		vector <Point2f> DetectDafuCenter(contours.size());     //¼ÇÂ¼¿ÉÄÜÊÇ´ó·ûÖĞĞÄµÄµã
+		vector <Point2f> DetectDafuCenter(contours.size());     //è®°å½•å¯èƒ½æ˜¯å¤§ç¬¦ä¸­å¿ƒçš„ç‚¹
 		for (int i = 0; i < hierarchy.size(); i++)
 		{
-			//»æÖÆÂÖÀªµÄ×îĞ¡Íâ½ÓÔ²
+			//ç»˜åˆ¶è½®å»“çš„æœ€å°å¤–æ¥åœ†
 			float radius;
 			if ((hierarchy[i].val[2] == -1 )&& (hierarchy[i].val[3] == -1))//
 			{
@@ -575,7 +558,7 @@ int main()
 			cout << "!!! can not find center in step1!" << endl;
 			continue;
 		}
-		//Æ¥ÅäÔ²ĞÄ
+		//åŒ¹é…åœ†å¿ƒ
 		float real_armour_dafuCenter_pixel_length = 56;
 		for (int i = 0; i < contours.size(); i++)
 		{
@@ -670,7 +653,7 @@ int main()
 	}
 	else
 	{
-		cout << "ÑÕÉ«´¦ÀíÊ±£¬Í¼Æ¬Îª¿Õ" << endl;
+		cout << "é¢œè‰²å¤„ç†æ—¶ï¼Œå›¾ç‰‡ä¸ºç©º" << endl;
 		return -1;
 	}
 #endif //jpg_test
