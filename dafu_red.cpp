@@ -92,7 +92,7 @@ int main()
 	//namedWindow("circle", CV_WINDOW_AUTOSIZE);
 #ifdef video_nanli
 	VideoCapture cap;
-	cap.open("E:\\RM\\tx2\\2019_win_dafu\\dafu\\dafu\\video\\dafu_mid1_2000.avi");
+	cap.open("E:\\RM\\tx2\\2019_win_dafu\\dafu\\dafu\\video\\dafu_red_nanli4.avi");
 	if (!cap.isOpened())//如果视频不能正常打开则返回
 	{
 		cout << "打开失败" << endl;
@@ -103,7 +103,7 @@ int main()
 	Size size = Size(cap.get(CV_CAP_PROP_FRAME_WIDTH), cap.get(CV_CAP_PROP_FRAME_HEIGHT));
 	Mat rangeImg = Mat::zeros(size, CV_8U);
 	VideoWriter writer;
-	writer.open("E:\\RM\\tx2\\2019_win_dafu\\dafu\\dafu\\video\\dafu_red_nanli3.avi", CV_FOURCC('M', 'J', 'P', 'G'), 10, size, true);//color-true  gray-false
+	writer.open("E:\\RM\\tx2\\2019_win_dafu\\dafu\\dafu\\video\\dafu_red_nanli_detect.avi", CV_FOURCC('M', 'J', 'P', 'G'), 10, size, true);//color-true  gray-false
 	while (cap.read(srcImg))
 	{
 		
@@ -112,14 +112,14 @@ int main()
 		Scalar hsv_min(1, 1, 140);//135
 		Scalar hsv_max(255, 255, 255);
 		inRange(tempImg, hsv_min, hsv_max, rangeImg);
-		//imshow("rangeImg", rangeImg);
+		imshow("src_origin", srcImg);
 		static Mat kernel_close = getStructuringElement(MORPH_RECT, Size(3, 3), Point(-1, -1));
 		morphologyEx(rangeImg, thresholdImg, MORPH_DILATE, kernel_close);
 		/*Mat element = getStructuringElement(MORPH_RECT, Size(2, 2));
 		morphologyEx(rangeImg, dstImg, MORPH_DILATE, element, Point(-1, -1));*/
 		//morphologyEx(dstImg, dstImg, MORPH_ERODE, element, Point(-1, -1), 1);
 		imshow("thresholdImg", thresholdImg);
-		cv::waitKey(10);
+		cv::waitKey(30);
 		//---------------------------------------find------------------------------------------------//
 		vector<vector<Point> > contours;
 		vector<Vec4i> hierarchy;
@@ -127,7 +127,11 @@ int main()
 		//Canny(thresholdImg, canny_output, 100, 100 * 2, 3);
 		// 寻找轮廓
 		cv::findContours(thresholdImg, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
-		if (contours.size() <= 0) continue;
+		if (contours.size() <= 0)
+		{
+			cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!size<0" << endl;
+			continue;
+		}
 		//cout << "contours:" << contours.size() << "hierarchy" << hierarchy.size() << endl;
 		// 绘出轮廓
 		Mat drawing = Mat::zeros(thresholdImg.size(), CV_8UC3);
@@ -206,12 +210,13 @@ int main()
 			{
 				//长的为width，短的为height
 				//cout << "width:" << box[i].size.width << "  height:" << box[i].size.height << endl;	
-				if ((box[i].size.width * box[i].size.height > 400) && (box[i].size.width * box[i].size.height < 600))
+				//cout << "area!!!!   " << box[i].size.width * box[i].size.height << endl;
+				if ((box[i].size.width * box[i].size.height > 200) && (box[i].size.width * box[i].size.height < 1100))
 				{
 					/*Scalar color = Scalar(0, 255, 0);
 					cv::drawContours(armourImg, contours, i, color, 2, 8, hierarchy);*/
 					//长的为width，短的为height
-					/*float detect_dafu_armour_pixel_width;
+					float detect_dafu_armour_pixel_width;
 					float detect_dafu_armour_pixel_height;
 					if (box[i].size.width > box[i].size.height)
 					{
@@ -222,28 +227,30 @@ int main()
 					{
 						detect_dafu_armour_pixel_width = box[i].size.height;
 						detect_dafu_armour_pixel_height = box[i].size.width;
-					}*/
-					//if ((detect_dafu_armour_pixel_width*1.0 / detect_dafu_armour_pixel_height) < 2)
+					}
+					if ((detect_dafu_armour_pixel_width*1.0 / detect_dafu_armour_pixel_height) < 3)
 					{
 						Scalar color = Scalar(255, 0, 0);
 						cv::drawContours(armourImg, contours, i, color, 2, 8, hierarchy);
 						DetectArmourCenter[armor_cnt] = box[i].center;
 						//armor_cnt += 1;
 					}
-					/*else
+					else
 					{
 						box[i].center.x = -1;
-					}*/
+						//cout << "!!!!!!!!!!!!!!!!!!!!error1: " << detect_dafu_armour_pixel_width * 1.0 / detect_dafu_armour_pixel_height << endl;
+					}
 				}
-				else if ((box[i].size.width * box[i].size.height > 600) && (box[i].size.width * box[i].size.height < 2000))
+				else if ((box[i].size.width * box[i].size.height > 1100) && (box[i].size.width * box[i].size.height < 2000))
 				{
 					Scalar color = Scalar(0, 255, 0);
 					cv::drawContours(detect_armourImg, contours, i, color, 2, 8, hierarchy);
-					
+					//cout << "111111111111111111error2: " << box[i].size.width * box[i].size.height << endl;
 				}
 				else
 				{
 					box[i].center.x = -1;
+					//cout << "111111111111111111error3: " << box[i].size.width * box[i].size.height << endl;
 				}
 
 			}
@@ -255,30 +262,19 @@ int main()
 		//找要击打的那一块
 		Mat find_armourImg = Mat::zeros(size, CV_8UC3);
 		Point2f armour_line;
+		float length_finding = 0;
 		int is_finding = 0;
 		for (int i = 0; i < contours.size(); i++)
 		{
 			if (box2[i].center.x != -1)
-			{
+			{length_finding = contourArea(contours[i]);
 				//长的为width，短的为height
 				//cout << "width:" << box2[i].size.width << "  height:" << box2[i].size.height << endl;
-				if ((box2[i].size.width * box2[i].size.height > 3000) && (box2[i].size.width * box2[i].size.height < 4000))
+				//if ((box2[i].size.width * box2[i].size.height > 3000) && (box2[i].size.width * box2[i].size.height < 5000))
+				if(length_finding<3000)
 				{
-					/*Scalar color = Scalar(0, 255, 0);
-					cv::drawContours(armourImg, contours, i, color, 2, 8, hierarchy);*/
-					//长的为width，短的为height
-					/*float detect_dafu_armour_pixel_width;
-					float detect_dafu_armour_pixel_height;
-					if (box[i].size.width > box[i].size.height)
-					{
-						detect_dafu_armour_pixel_width = box[i].size.width;
-						detect_dafu_armour_pixel_height = box[i].size.height;
-					}
-					else
-					{
-						detect_dafu_armour_pixel_width = box[i].size.height;
-						detect_dafu_armour_pixel_height = box[i].size.width;
-					}*/
+					
+					cout << "lenght_finding :" << length_finding << endl;
 					//if ((detect_dafu_armour_pixel_width*1.0 / detect_dafu_armour_pixel_height) < 2)
 					{
 						Scalar color = Scalar(255, 0, 0);
@@ -325,7 +321,7 @@ int main()
 		}
 		if (min_length < 36 && min_length>33)
 		{
-			cout << "length: " << min_length << endl;
+			//cout << "length: " << min_length << endl;
 			is_finding_armour = 1;
 			cv::circle(srcImg, Point(armour_ing.x, armour_ing.y), 2, Scalar(0, 255, 0), 2);
 		}
@@ -352,11 +348,11 @@ int main()
 		Point armour_predicted(dafu_center.x + pre_x * x_flag, dafu_center.y + pre_y);*/
 		cv::Point2f dstPoints = getRotatePoint(srcImg, armour_ing, dafu_center, angle);
 		cv::circle(srcImg, dstPoints, 2, Scalar(255, 255, 0), 2);
-		if (!is_finding_armour)
-			continue;
+		//if (!is_finding_armour)
+		//	continue;
 		imshow("src", srcImg);
 		writer << srcImg;
-		cv::waitKey(5);
+		//cv::waitKey(5);
 
 	}
 
